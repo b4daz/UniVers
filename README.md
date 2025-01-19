@@ -14,7 +14,7 @@
 
 ## 📦 Installation
 
-1. **Download** the plugin ZIP file from the [releases](https://github.com/b4daz/UniVers/) page.
+1. **Download** the plugin ZIP file from the [releases](https://github.com/b4daz/UniVers) page.
 2. **Place** the ZIP file directly into the `plugins/` folder of your PocketMine server.
 3. **Extract** the ZIP file in the `plugins/` folder. This will create a folder called `UniVers`.
 4. **Restart** your PocketMine server to load the plugin.
