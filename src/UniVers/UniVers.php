@@ -1,40 +1,46 @@
 <?php
 
+declare(strict_types=1);
+
 namespace UniVers;
 
 use pocketmine\plugin\PluginBase;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
-use pocketmine\event\player\PlayerKickEvent;
+use pocketmine\event\player\PlayerPreLoginEvent;
 use pocketmine\utils\Config;
-use pocketmine\event\player\PlayerVersionEvent;
+use pocketmine\utils\TextFormat;
 
 class UniVers extends PluginBase implements Listener {
-    
+
     private $config;
 
     public function onEnable(): void {
-        $this->getServer()->getPluginManager()->registerEvents($this, $this);
         $this->saveDefaultConfig();
         $this->config = $this->getConfig();
+        $this->getServer()->getPluginManager()->registerEvents($this, $this);
+    }
+
+    public function onPreLogin(PlayerPreLoginEvent $event): void {
+        $playerInfo = $event->getPlayerInfo();
+        $protocol = $playerInfo->getProtocolVersion();
+        $supportedProtocols = $this->config->get("accepted_protocols", []);
+
+        if (!in_array($protocol, $supportedProtocols, true)) {
+            $event->setKickMessage($this->config->get("kickMessage", "Tu versión no es compatible con este servidor."));
+            $event->cancel();
+        }
     }
 
     public function onPlayerJoin(PlayerJoinEvent $event): void {
         $player = $event->getPlayer();
-        $version = $player->getClientVersion();
+        $deviceInfo = $player->getPlayerInfo()->getExtraData();
+        $clientVersion = $deviceInfo["GameVersion"] ?? "Desconocida";
 
-        if (!$this->isVersionCompatible($version)) {
-            $kickMessage = str_replace("{version}", $version, $this->config->get("kickMessage"));
-            $event->setJoinMessage($kickMessage);
-            $player->kick($kickMessage);
-        } else {
-            $this->checkVersionMismatch($player);
-        }
-    }
+        $joinMessage = $this->config->get("joinMessage", "¡Bienvenido al servidor!");
+        $event->setJoinMessage(str_replace("{version}", $clientVersion, $joinMessage));
 
-    private function isVersionCompatible(int $version): bool {
-        $acceptedProtocols = $this->config->get("accepted_protocols");
-        return in_array($version, $acceptedProtocols);
+        $this->checkVersionMismatch($player);
     }
 
     private function checkVersionMismatch($player): void {
@@ -46,7 +52,7 @@ class UniVers extends PluginBase implements Listener {
         } else {
             return;
         }
-        
+
         $player->sendMessage($message);
     }
 }
