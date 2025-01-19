@@ -1,7 +1,7 @@
 {
   "kickMessage": "Your version is not compatible with this server. Please use a compatible version. Your current version: {version}.",
   "versionMismatchMessages": {
-    "older": "You are using an older version of Minecraft Bedrock. Please update to a version supported by the server.",
+    "older": "You are using an older version of Minecraft Bedrock. Some features may not be fully supported.",
     "newer": "You are using a newer version of Minecraft Bedrock. Some features may not be fully supported."
   },
   "accepted_protocols": [
