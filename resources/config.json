@@ -1,6 +1,6 @@
 {
     "minimumProtocol": 431,
-    "maximumProtocol": 589,
+    "maximumProtocol": 766,
     "kickMessageOld": "Your version is too old. Please update to join the server.",
     "kickMessageNew": "Your version is too new. Please downgrade to join the server."
 }
