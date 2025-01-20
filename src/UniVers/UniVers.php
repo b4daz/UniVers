@@ -2,57 +2,44 @@
 
 declare(strict_types=1);
 
-namespace UniVers;
+namespace IndexDev\UniVers;
 
-use pocketmine\plugin\PluginBase;
 use pocketmine\event\Listener;
-use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerPreLoginEvent;
+use pocketmine\plugin\PluginBase;
 use pocketmine\utils\Config;
-use pocketmine\utils\TextFormat;
 
-class UniVers extends PluginBase implements Listener {
+class Main extends PluginBase implements Listener {
 
-    private $config;
+    private Config $config;
 
-    public function onEnable(): void {
-        $this->saveDefaultConfig();
-        $this->config = $this->getConfig();
+    protected function onEnable(): void {
+        $this->loadConfiguration();
+
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
+        $this->getLogger()->info("UniVers is enabled");
+    }
+
+    private function loadConfiguration(): void {
+        $this->saveResource("config.json");
+        $this->config = new Config($this->getDataFolder() . "config.json", Config::JSON);
     }
 
     public function onPreLogin(PlayerPreLoginEvent $event): void {
         $playerInfo = $event->getPlayerInfo();
         $protocol = $playerInfo->getProtocolVersion();
-        $supportedProtocols = $this->config->get("accepted_protocols", []);
 
-        if (!in_array($protocol, $supportedProtocols, true)) {
-            $event->setKickMessage($this->config->get("kickMessage", "Tu versión no es compatible con este servidor."));
+        $minProtocol = $this->config->get("minimumProtocol", 0);
+        $maxProtocol = $this->config->get("maximumProtocol", PHP_INT_MAX);
+        $kickMessageOld = $this->config->get("kickMessageOld", "Your version is too old. Please update to join the server.");
+        $kickMessageNew = $this->config->get("kickMessageNew", "Your version is too new. Please downgrade to join the server.");
+
+        if ($protocol < $minProtocol) {
+            $event->setKickMessage($kickMessageOld);
+            $event->cancel();
+        } elseif ($protocol > $maxProtocol) {
+            $event->setKickMessage($kickMessageNew);
             $event->cancel();
         }
-    }
-
-    public function onPlayerJoin(PlayerJoinEvent $event): void {
-        $player = $event->getPlayer();
-        $deviceInfo = $player->getPlayerInfo()->getExtraData();
-        $clientVersion = $deviceInfo["GameVersion"] ?? "Desconocida";
-
-        $joinMessage = $this->config->get("joinMessage", "¡Bienvenido al servidor!");
-        $event->setJoinMessage(str_replace("{version}", $clientVersion, $joinMessage));
-
-        $this->checkVersionMismatch($player);
-    }
-
-    private function checkVersionMismatch($player): void {
-        $version = $player->getClientVersion();
-        if ($version < min($this->config->get("accepted_protocols"))) {
-            $message = $this->config->get("versionMismatchMessages")["older"];
-        } elseif ($version > max($this->config->get("accepted_protocols"))) {
-            $message = $this->config->get("versionMismatchMessages")["newer"];
-        } else {
-            return;
-        }
-
-        $player->sendMessage($message);
     }
 }
