@@ -13,7 +13,7 @@ class UniVers extends PluginBase implements Listener {
 
     private Config $config;
 
-    protected function onEnable(): void {
+    public function onEnable(): void {
         $this->saveResource("config.json");
         $this->config = new Config($this->getDataFolder() . "config.json", Config::JSON);
 
