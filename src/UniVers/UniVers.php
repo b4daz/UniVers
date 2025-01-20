@@ -9,7 +9,7 @@ use pocketmine\event\player\PlayerPreLoginEvent;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\Config;
 
-class Main extends PluginBase implements Listener {
+class UniVers extends PluginBase implements Listener {
 
     private Config $config;
 
