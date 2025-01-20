@@ -26,26 +26,9 @@
 Customize the accepted versions and kick messages by editing the `config.json` file.
 
 ```json
-{
-  "kickMessage": "Your version is not compatible with this server. Please use a compatible version. Your current version: {version}.",
-  "versionMismatchMessages": {
-    "older": "You are using an older version of Minecraft Bedrock. Please update to a version supported by the server.",
-    "newer": "You are using a newer version of Minecraft Bedrock. Some features may not be fully supported."
-  },
-  "accepted_protocols": [
-    448,
-    465,
-    471,
-    475,
-    486,
-    503,
-    527,
-    534,
-    544,
-    560,
-    567,
-    575,
-    582,
-    589
-  ]
+  {
+    "minimumProtocol": 431,
+    "maximumProtocol": 578,
+    "kickMessageOld": "Your version is too old. Please update to join the server.",
+    "kickMessageNew": "Your version is too new. Please downgrade to join the server."
 }
