@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace IndexDev\UniVers;
+namespace UniVers;
 
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerPreLoginEvent;
