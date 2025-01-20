@@ -14,15 +14,11 @@ class UniVers extends PluginBase implements Listener {
     private Config $config;
 
     protected function onEnable(): void {
-        $this->loadConfiguration();
-
-        $this->getServer()->getPluginManager()->registerEvents($this, $this);
-        $this->getLogger()->info("UniVers is enabled");
-    }
-
-    private function loadConfiguration(): void {
         $this->saveResource("config.json");
         $this->config = new Config($this->getDataFolder() . "config.json", Config::JSON);
+
+        $this->getServer()->getPluginManager()->registerEvents($this, $this);
+        $this->getLogger()->info("UniVers enabled successfully.");
     }
 
     public function onPreLogin(PlayerPreLoginEvent $event): void {
@@ -37,9 +33,11 @@ class UniVers extends PluginBase implements Listener {
         if ($protocol < $minProtocol) {
             $event->setKickMessage($kickMessageOld);
             $event->cancel();
+            $this->getLogger()->info("Player {$playerInfo->getUsername()} was kicked for using an old protocol: {$protocol}.");
         } elseif ($protocol > $maxProtocol) {
             $event->setKickMessage($kickMessageNew);
             $event->cancel();
+            $this->getLogger()->info("Player {$playerInfo->getUsername()} was kicked for using a new protocol: {$protocol}.");
         }
     }
 }
