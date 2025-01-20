@@ -28,7 +28,7 @@ Customize the accepted versions and kick messages by editing the `config.json` f
 ```json
   {
     "minimumProtocol": 431,
-    "maximumProtocol": 578,
+    "maximumProtocol": 766,
     "kickMessageOld": "Your version is too old. Please update to join the server.",
     "kickMessageNew": "Your version is too new. Please downgrade to join the server."
 }
