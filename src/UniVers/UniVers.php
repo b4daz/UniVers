@@ -4,21 +4,27 @@ declare(strict_types=1);
 
 namespace UniVers;
 
+use pocketmine\plugin\PluginBase;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerPreLoginEvent;
 use pocketmine\event\server\DataPacketReceiveEvent;
-use pocketmine\plugin\PluginBase;
-use pocketmine\utils\Config;
 use pocketmine\network\mcpe\protocol\RequestNetworkSettingsPacket;
+use pocketmine\utils\Config;
 
 class UniVers extends PluginBase implements Listener {
 
-    private Config $config;
-    private array $playerProtocols = [];
+    private ProtocolHandler $protocolHandler;
 
     public function onEnable(): void {
         $this->saveResource("config.json");
-        $this->config = new Config($this->getDataFolder() . "config.json", Config::JSON);
+        $configData = new Config($this->getDataFolder() . "config.json", Config::JSON);
+
+        $this->protocolHandler = new ProtocolHandler(
+            $configData->get("minimumProtocol", 0),
+            $configData->get("maximumProtocol", PHP_INT_MAX),
+            $configData->get("kickMessageOld", "Your version is too old. Please update to join the server."),
+            $configData->get("kickMessageNew", "Your version is too new. Please downgrade to join the server.")
+        );
 
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
         $this->getLogger()->info("UniVers enabled successfully.");
@@ -29,25 +35,23 @@ class UniVers extends PluginBase implements Listener {
         if ($packet instanceof RequestNetworkSettingsPacket) {
             $player = $event->getOrigin()->getPlayer();
             if ($player !== null) {
-                $this->playerProtocols[$player->getName()] = $packet->getProtocolVersion();
+                $this->protocolHandler->setPlayerProtocol($player->getName(), $packet->getProtocolVersion());
             }
         }
     }
 
-    public function onPreLogin(PlayerPreLoginEvent $event): void {
+    public function onPlayerPreLogin(PlayerPreLoginEvent $event): void {
         $playerInfo = $event->getPlayerInfo();
-        $protocol = $playerInfo->getProtocolVersion();
-        
-        $minProtocol = $this->config->get("minimumProtocol", 0);
-        $maxProtocol = $this->config->get("maximumProtocol", PHP_INT_MAX);
-        $kickMessageOld = $this->config->get("kickMessageOld", "Your version is too old. Please update to join the server.");
-        $kickMessageNew = $this->config->get("kickMessageNew", "Your version is too new. Please downgrade to join the server.");
+        $protocol = $this->protocolHandler->getPlayerProtocol($playerInfo->getUsername());
 
-        if ($protocol < $minProtocol) {
-            $event->setKickMessage($kickMessageOld);
-            $event->cancel();
-        } elseif ($protocol > $maxProtocol) {
-            $event->setKickMessage($kickMessageNew);
+        if ($protocol === null) {
+            $this->getLogger()->warning("Failed to detect protocol for player {$playerInfo->getUsername()}.");
+            return;
+        }
+
+        $kickMessage = $this->protocolHandler->checkProtocol($protocol);
+        if ($kickMessage !== null) {
+            $event->setKickMessage($kickMessage);
             $event->cancel();
         }
     }
